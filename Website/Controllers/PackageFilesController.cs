@@ -13,7 +13,7 @@ namespace NuGetGallery.Controllers
     public partial class PackageFilesController : Controller
     {
         private const long MaximumAllowedPackageFileSize = 3L * 1024 * 1024;		// maximum package size = 3MB
-        private const int MaximumPackageContentFileSize = 16 * 1024;                // maximum package content file to return before trimming = 16K
+        private const int MaximumPackageContentFileSize = 50 * 1024;                // maximum package content file to return before trimming = 50K
 
         private readonly IPackageService _packageService;
         private readonly IPackageFileService _packageFileService;

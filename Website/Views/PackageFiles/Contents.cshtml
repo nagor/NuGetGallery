@@ -9,7 +9,21 @@
 @section TopScripts
 {
     <link rel="stylesheet" href="@Url.Content("~/Content/jquery.treeview.css")" />
+    <link rel="stylesheet" href="@Url.Content("~/Content/SyntaxHighlighter/shCore.css")" />
+    <link rel="stylesheet" href="@Url.Content("~/Content/SyntaxHighlighter/shThemeDefault.css")" />
     <script src="@Url.Content("~/Scripts/jquery.treeview.js")"></script>
+    <script src="@Url.Content("~/Scripts/SyntaxHighlighter/shCore.js")"></script>
+    <script src="@Url.Content("~/Scripts/SyntaxHighlighter/shBrushXml.js")"></script>
+    <script src="@Url.Content("~/Scripts/SyntaxHighlighter/shBrushPowerShell.js")"></script>
+    <script src="@Url.Content("~/Scripts/SyntaxHighlighter/shBrushCss.js")"></script>
+    <script src="@Url.Content("~/Scripts/SyntaxHighlighter/shBrushPlain.js")"></script>
+    <script src="@Url.Content("~/Scripts/SyntaxHighlighter/shBrushCSharp.js")"></script>
+    <script src="@Url.Content("~/Scripts/SyntaxHighlighter/shBrushVb.js")"></script>
+    <script src="@Url.Content("~/Scripts/SyntaxHighlighter/shBrushCpp.js")"></script>
+    <script src="@Url.Content("~/Scripts/SyntaxHighlighter/shBrushJava.js")"></script>
+    <script src="@Url.Content("~/Scripts/SyntaxHighlighter/shBrushPhp.js")"></script>
+    <script src="@Url.Content("~/Scripts/SyntaxHighlighter/shBrushSql.js")"></script>
+    <script src="@Url.Content("~/Scripts/SyntaxHighlighter/shBrushJScript.js")"></script>
 }
 
 <hgroup class="page-heading">
@@ -38,6 +52,9 @@
 </div>
 
 <div id="contents">
+    <div>
+        <strong><span id="contentsHeader" class="header"></span></strong>
+    </div>
 
     <div id="metadata">
         <table>
@@ -181,14 +198,10 @@
     </div>
 
     <div id="fileContentContainer">
-        <div>
-            <strong><span id="fileName"></span></strong>
-        </div>
-        <textarea id="fileContentArea" contenteditable="false"></textarea>
-    
-        <div id="fileImageBorder">
-            <img id="fileImage" />
-        </div>
+    </div>
+
+    <div id="fileImageBorder">
+        <img id="fileImage" />
     </div>
 
 </div>
@@ -202,12 +215,63 @@
         }
 
         function showMetadata() {
+            $('#contentsHeader').text('Metadata');
             $('#metadata').show();
             $('#fileContentContainer').hide();
+            $('#fileImageBorder').hide();
+        }
+
+        function determineBrush(path) {
+            var index = path.lastIndexOf('.');
+            if (index == -1 || index == path.length - 1) {
+                return 'brush: text';
+            }
+
+            var extension = path.substr(index + 1).toLowerCase();
+            if (extension == 'js' || extension == 'jscript' || extension == 'javascript') {
+                return 'brush: js';
+            }
+
+            if (extension == 'xml' || extension == 'html' || extension == 'htm' || extension == 'cshtml' || extension == 'vbhtml' || extension == 'aspx') {
+                return 'brush: xml';
+            }
+
+            if (extension == 'ps1' || extension == 'psm1') {
+                return 'brush: ps';
+            }
+
+            if (extension == 'css') {
+                return 'brush: css';
+            }
+
+            if (extension == 'cs') {
+                return 'brush: csharp';
+            }
+
+            if (extension == 'vb') {
+                return 'brush: vbnet';
+            }
+
+            if (extension == 'cpp') {
+                return 'brush: cpp';
+            }
+
+            if (extension == 'java') {
+                return 'brush: java';
+            }
+
+            if (extension == 'php') {
+                return 'brush: php';
+            }
+
+            if (extension == 'sql') {
+                return 'brush: sql';
+            }
+
+            return 'brush: text';
         }
 
         function showContentFile(filePath) {
-            $('#fileContentContainer').show();
             $('#metadata').hide();
 
             if (filePath == $('#fileName').text()) {
@@ -217,34 +281,44 @@
 
             var viewUrl = '@Url.ViewPackageFile(Model.PackageMetadata.Id, Model.PackageMetadata.Version.ToString())' + '?filePath=' + filePath;
 
-            $('#fileName').text(filePath);
+            $('#contentsHeader').text(filePath);
 
             if (isImage(filePath)) {
-                $('#fileContentArea').hide();
+                $('#fileContentContainer').hide();
                 $('#fileImageBorder').show();
                 $('#fileImage').attr('src', viewUrl);
             }
             else {
                 $('#fileImageBorder').hide();
-                $('#fileContentArea').show();
-                $('#fileContentArea').text('Loading...');
+                $('#fileContentContainer').show();
+                $('#fileContentContainer').text('Loading...');
 
-                var errorMessage = '*** An error occurred while loading this file\'s contents. ***';
+                var errorMessage = "*** An error occurred while loading this file's contents. ***";
                 $.ajax(viewUrl,
                     {
                         success: function (data, status) {
                             if (status == 'success') {
-                                $('#fileContentArea').text(data);
+                                // escape HTML data
+                                data = data.replace('<', '&lt;');
+
+                                var preElement = document.createElement('pre');
+                                var brush = determineBrush(filePath)
+                                $(preElement).text(data)
+                                             .css('height', '200px')
+                                             .attr('class', brush );
+
+                                $('#fileContentContainer').empty().append(preElement);
+
+                                SyntaxHighlighter.highlight();
                             }
                             else {
-                                $('#fileContentArea').text(errorMessage);
+                                $('#fileContentContainer').text(errorMessage);
                             }
                         },
 
                         error: function (jqXHR, textStatus, errorThrown) {
-                            $('#fileContentArea').text(errorMessage);
+                            $('#fileContentContainer').text(errorMessage);
                         }
-
                     });
             }
         }
