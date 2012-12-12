@@ -19,8 +19,6 @@
 </hgroup>
 
 <div id="contentsNav">
-    <h3>Contents</h3>
-
     <div><a id="metadataLabel" href="#">Metadata</a></div>
 
     <ul id="packageView" class="filetree treeview-black">
@@ -185,7 +183,6 @@
     <div id="fileContentContainer">
         <div>
             <strong><span id="fileName"></span></strong>
-            <a id="downloadFileLink">Download this file</a>
         </div>
         <textarea id="fileContentArea" contenteditable="false"></textarea>
     
@@ -219,9 +216,7 @@
             }
 
             var viewUrl = '@Url.ViewPackageFile(Model.PackageMetadata.Id, Model.PackageMetadata.Version.ToString())' + '?filePath=' + filePath;
-            var downloadUrl = '@Url.DownloadPackageFile(Model.PackageMetadata.Id, Model.PackageMetadata.Version.ToString())' + '?filePath=' + filePath;
 
-            $('#downloadFileLink').attr('href', downloadUrl);
             $('#fileName').text(filePath);
 
             if (isImage(filePath)) {
