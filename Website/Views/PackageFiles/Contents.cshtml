@@ -215,7 +215,7 @@
         }
 
         function showMetadata() {
-            $('#contentsHeader').text('Metadata');
+            $('#contentsHeader').hide();
             $('#metadata').show();
             $('#fileContentContainer').hide();
             $('#fileImageBorder').hide();
@@ -273,6 +273,7 @@
 
         function showContentFile(filePath) {
             $('#metadata').hide();
+            $('#contentsHeader').show();
 
             if (filePath == $('#fileName').text()) {
                 // already showing this file, return
@@ -298,18 +299,22 @@
                     {
                         success: function (data, status) {
                             if (status == 'success') {
-                                // escape HTML data
-                                data = data.replace('<', '&lt;');
+                                if (data == 'The requested file is a binary file.') {
+                                    $('#fileContentContainer').text(data);
+                                }
+                                else {
+                                    // escape HTML data
+                                    data = data.replace('<', '&lt;');
 
-                                var preElement = document.createElement('pre');
-                                var brush = determineBrush(filePath)
-                                $(preElement).text(data)
-                                             .css('height', '200px')
-                                             .attr('class', brush );
+                                    var preElement = document.createElement('pre');
+                                    var brush = determineBrush(filePath)
+                                    $(preElement).text(data)
+                                                 .css('height', '200px')
+                                                 .attr('class', brush);
 
-                                $('#fileContentContainer').empty().append(preElement);
-
-                                SyntaxHighlighter.highlight();
+                                    $('#fileContentContainer').empty().append(preElement);
+                                    SyntaxHighlighter.highlight();
+                                }
                             }
                             else {
                                 $('#fileContentContainer').text(errorMessage);
@@ -324,7 +329,7 @@
         }
 
         $(function () {
-            $('#packageView').treeview({ collapsed: true });
+            $('#packageView').treeview({ collapsed: false });
             showMetadata();
 
             $('span.file').click(function (e) {
