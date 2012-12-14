@@ -38,15 +38,15 @@
     <ul id="packageView" class="filetree treeview-black">
         @Html.TreeView(Model.RootFolder.Children).EmptyContent("This package doesn't contain any file.").Children(p => p.Children).ItemTemplate(
             @<text>
-                @if (item.IsFile)
-                {
-                    <a><span class="file" data-path="@item.Path.Replace('\\', '/')">@item.Name</span></a>
-                }
-                else 
-                {
-                    <span class="folder">@item.Name</span>
-                }
-            </text>
+        @if (item.IsFile)
+        {
+            <a><span class="file" data-path="@item.Path.Replace('\\', '/')">@item.Name</span></a>
+        }
+        else
+        {
+            <span class="folder">@item.Name</span>
+        }
+        </text>
         )
     </ul>
 </div>
@@ -136,20 +136,26 @@
                 {
                     <tr>
                         <td class="toplabel"><strong>Summary:</strong></td>
-                        <td><p>@Model.PackageMetadata.Summary</p></td>
+                        <td>
+                            <p>@Model.PackageMetadata.Summary</p>
+                        </td>
                     </tr>
                 }
 
                 <tr>
                     <td class="toplabel"><strong>Description:</strong></td>
-                    <td><p>@Model.PackageMetadata.Description</p></td>
+                    <td>
+                        <p>@Model.PackageMetadata.Description</p>
+                    </td>
                 </tr>
 
                 @if (!Model.PackageMetadata.ReleaseNotes.IsEmpty())
                 {
                     <tr>
                         <td class="toplabel"><strong>Release notes:</strong></td>
-                        <td><p>@Model.PackageMetadata.ReleaseNotes</p></td>
+                        <td>
+                            <p>@Model.PackageMetadata.ReleaseNotes</p>
+                        </td>
                     </tr>
                 }
 
@@ -166,10 +172,10 @@
                                         @if (dependencySet.Dependencies.Any())
                                         {
                                             <ul>
-                                            @foreach (var dependency in dependencySet.Dependencies)
-                                            {
-                                                <li>@dependency.ToString()</li>
-                                            }
+                                                @foreach (var dependency in dependencySet.Dependencies)
+                                                {
+                                                    <li>@dependency.ToString()</li>
+                                                }
                                             </ul>
                                         }
                                     </li>                          
@@ -200,40 +206,61 @@
     <div id="fileContentContainer">
     </div>
 
-    <div id="fileImageBorder">
-        <img id="fileImage" />
-    </div>
+    <img id="fileImage" />
 
+    <div id="progressMessage">
+    </div>
 </div>
 
 @section BottomScripts
 {
     <script type="text/javascript">
-        function isImage(path) {
-            path = path.toLowerCase().substr(path.length - 3, 3);
-            return path == 'jpg' || path == 'gif' || path == 'png';
-        }
 
-        function showMetadata() {
-            $('#contentsHeader').hide();
-            $('#metadata').show();
-            $('#fileContentContainer').hide();
-            $('#fileImageBorder').hide();
-        }
+        var contentsHeaderElement, metadataElement, fileContentContainer, fileImageElement, progressElement;
 
-        function determineBrush(path) {
+        function getEffectiveExtension(path) {
             var index = path.lastIndexOf('.');
             if (index == -1 || index == path.length - 1) {
-                return 'brush: text';
+                return null;
             }
 
             var extension = path.substr(index + 1).toLowerCase();
+
+            if (index > 0 && (extension == 'transform' || extension == 'pp')) {
+                var index2 = path.lastIndexOf('.', index - 1);
+                if (index2 > -1 && index2 + 1 < index) {
+                    extension = path.substr(index2 + 1, index - index2 - 1);
+                }
+            }
+
+            return extension;
+        }
+
+        function isImage(path) {
+            var extension = getEffectiveExtension(path);
+            return extension == 'jpg' || path == 'gif' || extension == 'png';
+        }
+
+        function determineBrush(path) {
+            var extension = getEffectiveExtension(path);
+            if (!extension) {
+                return 'brush: text';
+            }
+            
             if (extension == 'js' || extension == 'jscript' || extension == 'javascript') {
                 return 'brush: js';
             }
 
-            if (extension == 'xml' || extension == 'html' || extension == 'htm' || extension == 'cshtml' || extension == 'vbhtml' || extension == 'aspx') {
+            if (extension == 'xml' || extension == 'config' || extension == 'html' || extension == 'htm') {
                 return 'brush: xml';
+            }
+
+            if (extension == 'cshtml') {
+                return 'brush: csharp; html-script: true';
+            }
+
+            if (extension == 'vbhtml') {
+                return 'brush: vb; html-script: true';
             }
 
             if (extension == 'ps1' || extension == 'psm1') {
@@ -271,64 +298,82 @@
             return 'brush: text';
         }
 
-        function showContentFile(filePath) {
-            $('#metadata').hide();
-            $('#contentsHeader').show();
+        function showMetadata() {
+            contentsHeaderElement.hide();
+            fileContentContainer.hide();
+            fileImageElement.hide();
+            progressElement.hide();
 
-            if (filePath == $('#fileName').text()) {
+            metadataElement.show();
+        }
+
+        function showContentFile(filePath) {
+            metadataElement.hide();
+            contentsHeaderElement.show();
+
+            if (filePath == contentsHeaderElement.text()) {
                 // already showing this file, return
                 return;
             }
 
             var viewUrl = '@Url.ViewPackageFile(Model.PackageMetadata.Id, Model.PackageMetadata.Version.ToString())' + '?filePath=' + filePath;
 
-            $('#contentsHeader').text(filePath);
+            // uncomment to avoid browse caching the file content
+            viewUrl = viewUrl + '&q=' + Math.random().toString();
+
+            contentsHeaderElement.text(filePath);
 
             if (isImage(filePath)) {
-                $('#fileContentContainer').hide();
-                $('#fileImageBorder').show();
-                $('#fileImage').attr('src', viewUrl);
+                fileContentContainer.hide();
+                progressElement.hide();
+                fileImageElement.attr('src', viewUrl).show();
             }
             else {
-                $('#fileImageBorder').hide();
-                $('#fileContentContainer').show();
-                $('#fileContentContainer').text('Loading...');
+                fileImageElement.hide();
+                fileContentContainer.empty().hide();
+                progressElement.show().text('Loading content...');
 
-                var errorMessage = "*** An error occurred while loading this file's contents. ***";
                 $.ajax(viewUrl,
                     {
                         success: function (data, status) {
-                            if (status == 'success') {
-                                if (data == 'The requested file is a binary file.') {
-                                    $('#fileContentContainer').text(data);
-                                }
-                                else {
-                                    // escape HTML data
-                                    data = data.replace('<', '&lt;');
+                            var preElement = document.createElement('pre');
+                            var brush = determineBrush(filePath)
+                            $(preElement).text(data).attr('class', brush);
 
-                                    var preElement = document.createElement('pre');
-                                    var brush = determineBrush(filePath)
-                                    $(preElement).text(data)
-                                                 .css('height', '200px')
-                                                 .attr('class', brush);
+                            fileContentContainer.append(preElement);
 
-                                    $('#fileContentContainer').empty().append(preElement);
-                                    SyntaxHighlighter.highlight();
-                                }
+                            if (data.length < 500) {
+                                // if the data is small (less than 500 characters), don't bother showing progress message
+                                showContentAfterParsing();
                             }
                             else {
-                                $('#fileContentContainer').text(errorMessage);
+                                progressElement.text('Parsing content...');
+                                window.setTimeout(showContentAfterParsing, 10);
                             }
                         },
 
                         error: function (jqXHR, textStatus, errorThrown) {
-                            $('#fileContentContainer').text(errorMessage);
+                            progressElement.text("*** An error occurred while loading this file's contents. ***");
                         }
                     });
             }
         }
 
+        function showContentAfterParsing() {
+            SyntaxHighlighter.highlight();
+            progressElement.hide();
+
+            $('#fileContentContainer > div').css('position', 'absolute');
+            fileContentContainer.show();
+        }
+
         $(function () {
+            contentsHeaderElement = $('#contentsHeader');
+            metadataElement = $('#metadata');
+            fileContentContainer = $('#fileContentContainer');
+            fileImageElement = $('#fileImage');
+            progressElement = $('#progressMessage');
+
             $('#packageView').treeview({ collapsed: false });
             showMetadata();
 
@@ -344,6 +389,10 @@
 
                 showMetadata();
             });
+
+            SyntaxHighlighter.defaults["auto-links"] = false;
+            SyntaxHighlighter.defaults["toolbar"] = false;
+            SyntaxHighlighter.defaults["gutter"] = false;
         });
     </script>
 }
