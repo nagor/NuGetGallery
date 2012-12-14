@@ -243,7 +243,7 @@
 
         function determineBrush(path) {
             var extension = getEffectiveExtension(path);
-            if (!extension) {
+            if (!extension || extension == 'txt') {
                 return 'brush: text';
             }
             
@@ -318,8 +318,8 @@
 
             var viewUrl = '@Url.ViewPackageFile(Model.PackageMetadata.Id, Model.PackageMetadata.Version.ToString())' + '?filePath=' + filePath;
 
-            // uncomment to avoid browse caching the file content
-            viewUrl = viewUrl + '&q=' + Math.random().toString();
+            // for Debugging ONLY: uncomment to avoid browsers caching the file content
+            // viewUrl = viewUrl + '&q=' + Math.random().toString();
 
             contentsHeaderElement.text(filePath);
 
