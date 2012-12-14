@@ -310,12 +310,7 @@
         function showContentFile(filePath) {
             metadataElement.hide();
             contentsHeaderElement.show();
-
-            if (filePath == contentsHeaderElement.text()) {
-                // already showing this file, return
-                return;
-            }
-
+            
             var viewUrl = '@Url.ViewPackageFile(Model.PackageMetadata.Id, Model.PackageMetadata.Version.ToString())' + '?filePath=' + filePath;
 
             // for Debugging ONLY: uncomment to avoid browsers caching the file content
