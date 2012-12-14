@@ -31,12 +31,12 @@ if(!$UseEmulator) {
   require-param -value $azureDiagStorageAccessKey -paramName "azureDiagStorageAccessKey"
   require-param -value $azureDiagStorageAccountName -paramName "azureDiagStorageAccountName"
   require-param -value $azureStorageBlobUrl -paramName "azureStorageBlobUrl"
-  require-param -value $remoteDesktopAccountExpiration -paramName "remoteDesktopAccountExpiration"
-  require-param -value $remoteDesktopCertificateThumbprint -paramName "remoteDesktopCertificateThumbprint"
-  require-param -value $remoteDesktopEnctyptedPassword -paramName "remoteDesktopEnctyptedPassword"
-  require-param -value $remoteDesktopUsername -paramName "remoteDesktopUsername"
+  #require-param -value $remoteDesktopAccountExpiration -paramName "remoteDesktopAccountExpiration"
+  #require-param -value $remoteDesktopCertificateThumbprint -paramName "remoteDesktopCertificateThumbprint"
+  #require-param -value $remoteDesktopEnctyptedPassword -paramName "remoteDesktopEnctyptedPassword"
+  #require-param -value $remoteDesktopUsername -paramName "remoteDesktopUsername"
   require-param -value $sqlAzureConnectionString -paramName "sqlAzureConnectionString"
-  require-param -value $sslCertificateThumbprint -paramName "sslCertificateThumbprint"
+  #require-param -value $sslCertificateThumbprint -paramName "sslCertificateThumbprint"
   require-param -value $validationKey -paramName "validationKey"
   require-param -value $decryptionKey -paramName "decryptionKey"
   require-param -value $vmSize -paramName "vmSize"
@@ -245,15 +245,15 @@ cp $cscfgPath $cscfgBakPath
 
 if(!$UseEmulator) {
   set-vmsize -path $csdefPath -size $vmSize
-  set-configurationsetting -path $cscfgPath -name "Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountExpiration" -value $remoteDesktopAccountExpiration
-  set-certificatethumbprint -path $cscfgPath -name "Microsoft.WindowsAzure.Plugins.RemoteAccess.PasswordEncryption" -value $remoteDesktopCertificateThumbprint
-  set-configurationsetting -path $cscfgPath -name "Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountEncryptedPassword" -value $remoteDesktopEnctyptedPassword
-  set-configurationsetting -path $cscfgPath -name "Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountUsername" -value $remoteDesktopUsername
+  #set-configurationsetting -path $cscfgPath -name "Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountExpiration" -value $remoteDesktopAccountExpiration
+  #set-certificatethumbprint -path $cscfgPath -name "Microsoft.WindowsAzure.Plugins.RemoteAccess.PasswordEncryption" -value $remoteDesktopCertificateThumbprint
+  #set-configurationsetting -path $cscfgPath -name "Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountEncryptedPassword" -value $remoteDesktopEnctyptedPassword
+  #set-configurationsetting -path $cscfgPath -name "Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountUsername" -value $remoteDesktopUsername
   if(![String]::IsNullOrEmpty($azureDiagStorageAccountName)) {
     set-configurationsetting -path $cscfgPath -name "Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" -value "DefaultEndpointsProtocol=https;AccountName=$azureDiagStorageAccountName;AccountKey=$azureDiagStorageAccessKey"
   }
   set-connectionstring -path $webConfigPath -name "NuGetGallery" -value $sqlAzureConnectionString
-  set-certificatethumbprint -path $cscfgPath -name "nuget.org" -value $sslCertificateThumbprint
+  #set-certificatethumbprint -path $cscfgPath -name "nuget.org" -value $sslCertificateThumbprint
 } else {
   remove-startuptask -path $csdefPath -commandLine "EnableDynamicHttpCompression.cmd"
   remove-ssl -path $csdefPath

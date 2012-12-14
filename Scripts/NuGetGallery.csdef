@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ServiceDefinition name="Azure" xmlns="http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceDefinition" schemaVersion="2012-10.1.8">
-  <WebRole name="Website" vmsize="Medium">
+  <WebRole name="Website" vmsize="Small">
     <Startup>
       <Task commandLine="EnableDynamicHttpCompression.cmd" executionContext="elevated" taskType="simple" />
       <!-- Configure IIS Logging as a background task, since it will likely need to wait for the IIS site to be created -->
@@ -10,13 +10,13 @@
       <Site name="Web">
         <Bindings>
           <Binding name="NonSSLBinding" endpointName="Non-SSL" />
-          <Binding name="SSLBinding" endpointName="SSL" />
+       <!--   <Binding name="SSLBinding" endpointName="SSL" /> -->
         </Bindings>
       </Site>
     </Sites>
     <Endpoints>
       <InputEndpoint name="Non-SSL" protocol="http" port="80" />
-      <InputEndpoint name="SSL" protocol="https" port="443" certificate="nuget.org" />
+   <!--   <InputEndpoint name="SSL" protocol="https" port="443" certificate="nuget.org" /> -->
     </Endpoints>
     <LocalResources>
       <LocalStorage name="IISLogs" sizeInMB="128" cleanOnRoleRecycle="false" />
@@ -24,8 +24,8 @@
     </LocalResources>
     <Imports>
       <Import moduleName="Diagnostics" />
-      <Import moduleName="RemoteAccess" />
-      <Import moduleName="RemoteForwarder" />
+<!--      <Import moduleName="RemoteAccess" /> -->
+<!--      <Import moduleName="RemoteForwarder" /> -->
     </Imports>
   </WebRole>
 </ServiceDefinition>
